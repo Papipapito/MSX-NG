@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="540" viewBox="0 0 1100 540">
+<style>text{font-family:Arial,sans-serif;fill:#0f172a}.title{font-size:24px;font-weight:700}.h{font-size:17px;font-weight:700}.s{font-size:13px}.box{stroke:#334155;stroke-width:2}.arrow{stroke:#64748b;stroke-width:3;fill:none}</style>
+<rect width="1100" height="540" fill="white"/><text class="title" x="550" y="36" text-anchor="middle">MSX-NG processor hierarchy — alternative profile</text>
+
+<rect class="box" x="120" y="80" width="860" height="95" rx="16" fill="#dbeafe"/>
+<text class="h" x="550" y="112" text-anchor="middle">LEVEL 1 — General-purpose CPUs</text>
+<text class="s" x="550" y="140" text-anchor="middle">A25-A: user/system CPU • A25-B: accelerator/node CPU</text><text class="s" x="550" y="160" text-anchor="middle">GW5AST hard cores — no programmable LUT cost</text>
+
+<path class="arrow" d="M550 175V220"/>
+<rect class="box" x="120" y="220" width="860" height="95" rx="16" fill="#dcfce7"/>
+<text class="h" x="550" y="252" text-anchor="middle">LEVEL 2 — FPGA soft RV32 controllers</text>
+<text class="s" x="550" y="280" text-anchor="middle">RV32-A: slots / I/O / DMA / timing • RV32-B: GPU / video / audio command control</text><text class="s" x="550" y="300" text-anchor="middle">small, deterministic, no MMU required; target frequency is an implementation estimate</text>
+
+<path class="arrow" d="M550 315V360"/>
+<rect class="box" x="120" y="360" width="860" height="95" rx="16" fill="#fff7ed"/>
+<text class="h" x="550" y="392" text-anchor="middle">LEVEL 3 — Dedicated hardware engines</text>
+<text class="s" x="550" y="420" text-anchor="middle">Z80 • V9968 • 2D GPU • compositor • audio • DMA • optional DSP/3D</text><text class="s" x="550" y="440" text-anchor="middle">cycle-accurate or massively parallel work stays out of the general-purpose CPUs</text>
+</svg>
