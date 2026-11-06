@@ -266,3 +266,77 @@ The **GW5AST hard RISC-V is deliberately not part of the MSX-NG mandatory archit
 **Rule:** MSX-NG must still boot and operate if this hard processor is unused. It is a complement, not the machine's identity.
 
 See [Hard RISC-V companion suggestions](docs/12-hard-riscv-suggestions.md).
+
+
+## another thing2
+
+A future **Dual-138K MSX-NG backplane** is proposed as an optional expansion architecture. Instead of placing two bare FPGA chips on the motherboard, it uses **two complete removable Tang 138K SOMs**, each preserving its own local resources:
+
+- GW5AST-138 FPGA;
+- onboard DDR3;
+- flash/configuration storage;
+- local clocks;
+- local power resources;
+- JTAG/configuration path.
+
+The carrier/backplane only provides the infrastructure that connects and expands them.
+
+![Dual-138K backplane](docs/diagrams/dual-138k-backplane.svg)
+
+### Proposed split
+
+**138K SOM A — System / Compute**
+
+- MSX-NG RV32 soft CPU(s);
+- Linux / Buildroot;
+- system DDR;
+- DMA / interrupts / timers;
+- storage;
+- classic MSX slot controller;
+- management of modern expansion modules.
+
+**138K SOM B — Graphics / Acceleration**
+
+- native 2D GPU;
+- compositor;
+- V9968;
+- HDMI/display;
+- local DDR as graphics/video memory;
+- optional RasterIX/3D;
+- additional legacy or compute accelerators.
+
+### High-speed SOM-to-SOM fabric
+
+The preferred connection is a **point-to-point SERDES fabric**, not a shared multidrop bus.
+
+Initial target:
+
+- 2 full-duplex lanes;
+- 6.25 Gb/s per lane;
+- approximately 1.25 GB/s useful per direction with two lanes before higher-level protocol overhead;
+- physically route 4 lanes if the SOM connector exposes enough transceivers.
+
+The logical protocol can carry:
+
+`READ32`, `WRITE32`, block transfers, DMA queues, doorbells, IRQs, messages and endpoint discovery.
+
+### Service processors
+
+The motherboard can also include:
+
+- **ESP32-P4** for USB High-Speed, Ethernet, SD, input aggregation, updates, diagnostics and recovery;
+- **ESP32-C6** for Wi-Fi 6, Bluetooth LE and IEEE 802.15.4 / Thread / Zigbee.
+
+These processors complement MSX-NG but do not replace the FPGA-native RV32 CPU.
+
+### Expansion
+
+The same board can provide:
+
+- classic MSX cartridge slots on a protected compatibility bus;
+- 2-3 modern FPGA expansion sockets for GW5A-25-class modules;
+- audio, OPL4, MIDI, networking, capture, extra legacy cores or experimental accelerators.
+
+The two SOMs remain **independent FPGA computers**. Their DDR memories are not treated as one transparent coherent RAM pool; communication should use explicit DMA buffers, queues, fences and completion interrupts.
+
+Full design notes: [Dual-138K Reference Backplane](docs/16-dual-138k-infrastructure.md).
