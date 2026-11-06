@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="650" viewBox="0 0 1280 650">
+<style>
+text{font-family:Arial,sans-serif;fill:#0f172a}.title{font-size:24px;font-weight:700}.sub{font-size:14px}
+.h{font-size:17px;font-weight:700}.s{font-size:13px}.box{stroke:#334155;stroke-width:2}.link{stroke:#7c3aed;stroke-width:5;fill:none}
+.ctrl{stroke:#0f766e;stroke-width:3;fill:none}.svc{stroke:#d97706;stroke-width:3;fill:none}
+</style><rect width="1280" height="650" fill="white"/>
+<text class="title" x="640" y="35" text-anchor="middle">MSX-NG Dual-138K — Hard-A25-first alternative</text>
+<text class="sub" x="640" y="58" text-anchor="middle">Two complete autonomous SOMs; hard A25 CPUs for general-purpose work, soft RV32 controllers for real-time FPGA tasks</text>
+
+<rect x="40" y="85" width="520" height="390" rx="18" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+<text class="h" x="300" y="115" text-anchor="middle">SOM A — SYSTEM NODE</text>
+<rect class="box" x="80" y="145" width="205" height="92" rx="12" fill="#dcfce7"/>
+<text class="h" x="182" y="175" text-anchor="middle">Hard Andes A25</text><text class="s" x="182" y="199" text-anchor="middle">official GW5AST hard core</text><text class="s" x="182" y="220" text-anchor="middle">Linux / Zephyr / bare-metal</text>
+<rect class="box" x="315" y="145" width="205" height="92" rx="12" fill="#fefce8"/>
+<text class="h" x="417" y="175" text-anchor="middle">SOM-local DDR3</text><text class="s" x="417" y="199" text-anchor="middle">system RAM</text><text class="s" x="417" y="220" text-anchor="middle">private to node A</text>
+<rect class="box" x="80" y="275" width="205" height="100" rx="12" fill="#ecfeff"/>
+<text class="h" x="182" y="305" text-anchor="middle">Soft RV32-A</text><text class="s" x="182" y="329" text-anchor="middle">small / no MMU</text><text class="s" x="182" y="350" text-anchor="middle">real-time controller</text>
+<rect class="box" x="315" y="275" width="205" height="100" rx="12" fill="#ffedd5"/>
+<text class="h" x="417" y="305" text-anchor="middle">System FPGA logic</text><text class="s" x="417" y="329" text-anchor="middle">slots • DMA • storage</text><text class="s" x="417" y="350" text-anchor="middle">expansion • debug</text>
+<path class="ctrl" d="M182 237V275M285 325H315"/>
+
+<rect x="720" y="85" width="520" height="390" rx="18" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+<text class="h" x="980" y="115" text-anchor="middle">SOM B — GRAPHICS / ACCELERATOR NODE</text>
+<rect class="box" x="760" y="145" width="205" height="92" rx="12" fill="#dbeafe"/>
+<text class="h" x="862" y="175" text-anchor="middle">Hard Andes A25</text><text class="s" x="862" y="199" text-anchor="middle">node/accelerator CPU</text><text class="s" x="862" y="220" text-anchor="middle">RTOS / Linux / firmware</text>
+<rect class="box" x="995" y="145" width="205" height="92" rx="12" fill="#fefce8"/>
+<text class="h" x="1097" y="175" text-anchor="middle">SOM-local DDR3</text><text class="s" x="1097" y="199" text-anchor="middle">video/assets RAM</text><text class="s" x="1097" y="220" text-anchor="middle">private to node B</text>
+<rect class="box" x="760" y="275" width="205" height="100" rx="12" fill="#ecfeff"/>
+<text class="h" x="862" y="305" text-anchor="middle">Soft RV32-B</text><text class="s" x="862" y="329" text-anchor="middle">GPU/video real-time</text><text class="s" x="862" y="350" text-anchor="middle">command controller</text>
+<rect class="box" x="995" y="275" width="205" height="100" rx="12" fill="#fdf4ff"/>
+<text class="h" x="1097" y="305" text-anchor="middle">Accelerator FPGA</text><text class="s" x="1097" y="329" text-anchor="middle">GPU • V9968 • audio</text><text class="s" x="1097" y="350" text-anchor="middle">optional 3D / DSP</text>
+<path class="ctrl" d="M862 237V275M965 325H995"/>
+
+<path class="link" d="M560 205H720"/><text class="h" x="640" y="185" text-anchor="middle">SERDES Fabric</text><text class="s" x="640" y="228" text-anchor="middle">queues • DMA • messages • IRQ</text>
+
+<rect class="box" x="210" y="520" width="230" height="80" rx="12" fill="#fef3c7"/><text class="h" x="325" y="550" text-anchor="middle">ESP32-P4</text><text class="s" x="325" y="574" text-anchor="middle">USB HS • Ethernet • SD • recovery</text>
+<rect class="box" x="475" y="520" width="210" height="80" rx="12" fill="#dcfce7"/><text class="h" x="580" y="550" text-anchor="middle">ESP32-C6</text><text class="s" x="580" y="574" text-anchor="middle">Wi-Fi 6 • BLE • 802.15.4</text>
+<rect class="box" x="760" y="520" width="310" height="80" rx="12" fill="#f1f5f9"/><text class="h" x="915" y="550" text-anchor="middle">Expansion / classic MSX buses</text><text class="s" x="915" y="574" text-anchor="middle">separate electrical domains</text>
+<path class="svc" d="M300 475V520M440 560H475M980 475V500H915V520"/>
+</svg>
