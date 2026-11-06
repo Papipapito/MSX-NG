@@ -1,0 +1,16 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.28", ranksep="0.5", fontname="Helvetica"];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10, color="#334155", fillcolor="#f8fafc", width=1.45];
+  edge [color="#64748b", penwidth=1.4, arrowsize=0.7];
+  m0 [label="M0\nSpec / ABI", fillcolor="#f1f5f9"];
+  m1 [label="M1\nClock + DDR", fillcolor="#ecfeff"];
+  m2 [label="M2\nRV32 bare metal", fillcolor="#e0f2fe"];
+  m3 [label="M3\nOpenSBI + Linux", fillcolor="#dbeafe"];
+  m4 [label="M4\nHDMI + DRM/KMS", fillcolor="#ede9fe"];
+  m5 [label="M5\nZ80 + V9968", fillcolor="#ffedd5"];
+  m6 [label="M6\nMSX window", fillcolor="#fef3c7"];
+  m7 [label="M7\nUsable system", fillcolor="#dcfce7"];
+  m8 [label="M8\n2-core SMP", fillcolor="#ccfbf1"];
+  m9 [label="M9\nExpansion / 3D", fillcolor="#fce7f3"];
+  m0 -> m1 -> m2 -> m3 -> m4 -> m5 -> m6 -> m7 -> m8 -> m9;
+}
