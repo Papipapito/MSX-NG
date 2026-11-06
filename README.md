@@ -6,6 +6,25 @@ The reference development target is the **Sipeed Tang Console / Tang Mega 138K (
 
 > Status: **architecture / bring-up specification**. No MSX-NG RTL has been declared production-ready yet.
 
+## Index
+
+- [Design goals](#design-goals)
+- [Baseline system](#baseline-system)
+- [Standard profiles](#standard-profiles)
+- [CPU standard](#cpu-standard---first-target)
+- [Linux choice](#linux-choice)
+- [Graphics model](#graphics-model)
+- [Legacy MSX island](#legacy-msx-island)
+- [Memory](#memory)
+- [Resource planning](#resource-planning---138k-first-prototype)
+- [Tang Console 138K implementation plan](#tang-console-138k-implementation-plan)
+- [Repository layout](#repository-layout)
+- [Definition of done for v0.1](#definition-of-done-for-v01)
+- [Related existing work](#related-existing-work)
+- [Hard RISC-V companion ideas](#sugerencias---uso-del-risc-v-hard-de-la-138k-fuera-del-estándar-msx-ng)
+- [another thing2 — Dual-138K architecture](#another-thing2)
+- [Full documentation index](docs/INDEX.md)
+
 ![MSX-NG architecture](docs/diagrams/system-architecture.svg)
 
 ## Design goals
@@ -270,73 +289,166 @@ See [Hard RISC-V companion suggestions](docs/12-hard-riscv-suggestions.md).
 
 ## another thing2
 
-A future **Dual-138K MSX-NG backplane** is proposed as an optional expansion architecture. Instead of placing two bare FPGA chips on the motherboard, it uses **two complete removable Tang 138K SOMs**, each preserving its own local resources:
-
-- GW5AST-138 FPGA;
-- onboard DDR3;
-- flash/configuration storage;
-- local clocks;
-- local power resources;
-- JTAG/configuration path.
-
-The carrier/backplane only provides the infrastructure that connects and expands them.
+The **Dual-138K MSX-NG** concept is an optional architecture based on **two complete removable Tang 138K SOMs**, not two bare FPGA chips. Each SOM keeps its own GW5AST-138, DDR3, flash, clocks, local power resources and configuration/debug path.
 
 ![Dual-138K backplane](docs/diagrams/dual-138k-backplane.svg)
 
-### Proposed split
+### Two complete autonomous SOMs
 
-**138K SOM A — System / Compute**
+```text
+        SOM 138K A                              SOM 138K B
++-------------------------+             +-------------------------+
+| GW5AST-138              |             | GW5AST-138              |
+| own DDR3                |             | own DDR3                |
+| own flash               |             | own flash               |
+| own clocks              |             | own clocks              |
+| own local power         |             | own local power         |
+| own config / debug      |             | own config / debug      |
++------------+------------+             +------------+------------+
+             |                                       |
+             +========= MSX-NG Fabric ===============+
+                     SERDES point-to-point
+```
 
-- MSX-NG RV32 soft CPU(s);
-- Linux / Buildroot;
-- system DDR;
-- DMA / interrupts / timers;
-- storage;
-- classic MSX slot controller;
-- management of modern expansion modules.
+The carrier/backplane provides the interconnect, classic MSX slots, modern FPGA expansion, ESP32-P4/ESP32-C6 services and external I/O. It does not recreate the SOM-local DDR/flash/clock resources.
 
-**138K SOM B — Graphics / Acceleration**
+### Original portable approach
 
+The original MSX-NG architecture keeps the **soft RV32** as the main native CPU so the design can remain portable to other FPGA families.
+
+```text
+soft RV32
+   |
+Linux / Buildroot
+   |
+GPU / Z80 / V9968 / audio
+```
+
+This remains the most portable profile.
+
+### Alternative: use the two hard A25 CPUs as the main processors
+
+If MSX-NG is intentionally fixed to **two GW5AST-138 SOMs**, an optimized alternative is much more attractive:
+
+![Hard-A25-first architecture](docs/diagrams/dual-138k-hardcpu-architecture.svg)
+
+```text
+SOM A                                SOM B
++----------------------+             +----------------------+
+| Hard Andes A25      |             | Hard Andes A25      |
+| main system CPU     |             | accelerator/node CPU|
+| Linux / RTOS / OS   |             | RTOS / Linux / FW   |
+|                      |             |                      |
+| soft RV32-A         |             | soft RV32-B         |
+| real-time control   |             | GPU/video control   |
++----------+-----------+             +----------+-----------+
+           |                                    |
+           +======= high-speed SERDES ==========+
+```
+
+The hard A25 processors become the **general-purpose CPUs**, while small soft-RV32 cores remain in FPGA fabric as deterministic hardware controllers.
+
+According to the GOWIN AE350/A25 hardware documentation, each A25 can run at **up to 800 MHz**. The two A25s are still in different chips with private caches and separate DDR, so they should initially be treated as **two cooperating compute nodes**, not as a normal coherent two-core SMP system.
+
+### Recommended processor hierarchy
+
+![Processor hierarchy](docs/diagrams/cpu-hierarchy.svg)
+
+**Level 1 — Hard A25 CPUs**
+
+- A25-A: main system CPU.
+- A25-B: accelerator / secondary-node CPU.
+
+**Level 2 — soft RV32 controllers**
+
+- RV32-A: MSX slots, I/O, DMA, expansion and deterministic system control.
+- RV32-B: GPU command queues, V9968, video/audio timing and accelerator control.
+
+These soft cores no longer need Linux, Supervisor mode or an MMU.
+
+**Level 3 — dedicated FPGA engines**
+
+- Z80;
+- V9968;
 - native 2D GPU;
 - compositor;
-- V9968;
-- HDMI/display;
-- local DDR as graphics/video memory;
-- optional RasterIX/3D;
-- additional legacy or compute accelerators.
+- audio;
+- DMA;
+- optional OPL4 / DSP / RasterIX.
 
-### High-speed SOM-to-SOM fabric
+### Operating-system alternatives
 
-The preferred connection is a **point-to-point SERDES fabric**, not a shared multidrop bus.
+![Operating-system alternatives](docs/diagrams/os-alternatives.svg)
 
-Initial target:
+Three models are kept open:
 
-- 2 full-duplex lanes;
-- 6.25 Gb/s per lane;
-- approximately 1.25 GB/s useful per direction with two lanes before higher-level protocol overhead;
-- physically route 4 lanes if the SOM connector exposes enough transceivers.
+| Model | Main advantage | Main cost |
+|---|---|---|
+| **Linux** | largest software ecosystem, POSIX, networking, filesystems, existing GUI stack | heavier runtime and less deterministic |
+| **Zephyr / RTOS** | fast boot, low footprint, deterministic scheduling | smaller application ecosystem |
+| **Bare-metal / MSX-NG OS** | maximum control, identity and minimal overhead | largest software-development effort |
 
-The logical protocol can carry:
+A practical evolution path is:
+
+```text
+vendor bare-metal bring-up
+          |
+          v
+Zephyr / RTOS hardware abstraction
+          |
+          v
+stable MSX-NG HAL + API
+          |
+          +----------------------+
+          |                      |
+          v                      v
+     Linux profile        dedicated MSX-NG OS
+```
+
+### Inter-SOM fabric
+
+The preferred link is a **point-to-point SERDES fabric**, initially 2 full-duplex lanes, with 4 lanes physically routed if the SOM connector allows it.
+
+The logical transport can provide:
 
 `READ32`, `WRITE32`, block transfers, DMA queues, doorbells, IRQs, messages and endpoint discovery.
 
+The two DDR memories remain separate. Communication should use explicit buffers, queues, DMA, fences and completion interrupts rather than pretending the two SOMs share one coherent RAM pool.
+
 ### Service processors
 
-The motherboard can also include:
+The backplane may also include:
 
-- **ESP32-P4** for USB High-Speed, Ethernet, SD, input aggregation, updates, diagnostics and recovery;
-- **ESP32-C6** for Wi-Fi 6, Bluetooth LE and IEEE 802.15.4 / Thread / Zigbee.
+- **ESP32-P4** — USB High-Speed, Ethernet, SD, input aggregation, updates, diagnostics and recovery.
+- **ESP32-C6** — Wi-Fi 6, Bluetooth LE and IEEE 802.15.4 / Thread / Zigbee.
 
-These processors complement MSX-NG but do not replace the FPGA-native RV32 CPU.
+These are service processors, not replacements for the MSX-NG main CPUs.
 
 ### Expansion
 
-The same board can provide:
+The same backplane can provide:
 
 - classic MSX cartridge slots on a protected compatibility bus;
 - 2-3 modern FPGA expansion sockets for GW5A-25-class modules;
-- audio, OPL4, MIDI, networking, capture, extra legacy cores or experimental accelerators.
+- OPL4 / PSG / SCC / FM;
+- MIDI;
+- networking;
+- capture/video input;
+- extra retro cores;
+- experimental accelerators.
 
-The two SOMs remain **independent FPGA computers**. Their DDR memories are not treated as one transparent coherent RAM pool; communication should use explicit DMA buffers, queues, fences and completion interrupts.
+### Current recommendation if MSX-NG becomes dual-138K-only
 
-Full design notes: [Dual-138K Reference Backplane](docs/16-dual-138k-infrastructure.md).
+```text
+A25-A       = main system CPU
+A25-B       = accelerator / secondary-node CPU
+soft RV32-A = system real-time controller
+soft RV32-B = graphics/media real-time controller
+FPGA logic  = Z80 / V9968 / GPU / audio / DMA / accelerators
+ESP32-P4/C6 = external services and connectivity
+```
+
+The repository keeps both the **portable soft-RV32-first profile** and the **dual-138K hard-A25-first profile** until real hardware measurements decide which direction is better.
+
+Full design: [Dual-138K Reference Backplane](docs/16-dual-138k-infrastructure.md).
+

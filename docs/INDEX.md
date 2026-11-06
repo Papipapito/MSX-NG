@@ -28,3 +28,13 @@
 - [Dual-138K hard-A25 architecture](diagrams/dual-138k-hardcpu-architecture.svg)
 - [Operating-system alternatives](diagrams/os-alternatives.svg)
 - [Processor hierarchy](diagrams/cpu-hierarchy.svg)
+
+## Dual-138K architecture alternatives
+
+- [Complete Dual-138K design](16-dual-138k-infrastructure.md)
+- [Dual-138K backplane](diagrams/dual-138k-backplane.svg)
+- [Hard-A25-first architecture](diagrams/dual-138k-hardcpu-architecture.svg)
+- [Operating-system alternatives](diagrams/os-alternatives.svg)
+- [Processor hierarchy](diagrams/cpu-hierarchy.svg)
+
+The Dual-138K documentation keeps both alternatives visible: **soft-RV32-first for portability** and **hard-A25-first for a dedicated two-SOM GW5AST-138 machine**.
