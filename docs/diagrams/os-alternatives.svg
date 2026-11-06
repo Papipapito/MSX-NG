@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+<style>text{font-family:Arial,sans-serif;fill:#0f172a}.title{font-size:24px;font-weight:700}.h{font-size:17px;font-weight:700}.s{font-size:13px}.box{stroke:#334155;stroke-width:2}</style>
+<rect width="1200" height="520" fill="white"/><text class="title" x="600" y="38" text-anchor="middle">Software alternatives for the hard A25 CPUs</text>
+<rect x="40" y="85" width="340" height="345" rx="18" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+<text class="h" x="210" y="120" text-anchor="middle">A — Linux</text><text class="s" x="210" y="147" text-anchor="middle">maximum ecosystem</text>
+<rect class="box" x="80" y="180" width="260" height="55" rx="9" fill="#dbeafe"/><text class="s" x="210" y="213" text-anchor="middle">Apps • filesystems • TCP/IP • SSH</text>
+<rect class="box" x="80" y="255" width="260" height="55" rx="9" fill="#dbeafe"/><text class="s" x="210" y="288" text-anchor="middle">DRM/KMS • Wayland • POSIX</text>
+<rect class="box" x="80" y="330" width="260" height="55" rx="9" fill="#dbeafe"/><text class="s" x="210" y="363" text-anchor="middle">heaviest boot/runtime footprint</text>
+
+<rect x="430" y="85" width="340" height="345" rx="18" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+<text class="h" x="600" y="120" text-anchor="middle">B — Zephyr / RTOS</text><text class="s" x="600" y="147" text-anchor="middle">balanced embedded computer</text>
+<rect class="box" x="470" y="180" width="260" height="55" rx="9" fill="#dcfce7"/><text class="s" x="600" y="213" text-anchor="middle">threads • drivers • networking</text>
+<rect class="box" x="470" y="255" width="260" height="55" rx="9" fill="#dcfce7"/><text class="s" x="600" y="288" text-anchor="middle">deterministic • fast boot</text>
+<rect class="box" x="470" y="330" width="260" height="55" rx="9" fill="#dcfce7"/><text class="s" x="600" y="363" text-anchor="middle">good base for MSX-NG API</text>
+
+<rect x="820" y="85" width="340" height="345" rx="18" fill="#fff7ed" stroke="#d97706" stroke-width="3"/>
+<text class="h" x="990" y="120" text-anchor="middle">C — Bare-metal / own OS</text><text class="s" x="990" y="147" text-anchor="middle">maximum identity and control</text>
+<rect class="box" x="860" y="180" width="260" height="55" rx="9" fill="#ffedd5"/><text class="s" x="990" y="213" text-anchor="middle">minimal latency • minimal overhead</text>
+<rect class="box" x="860" y="255" width="260" height="55" rx="9" fill="#ffedd5"/><text class="s" x="990" y="288" text-anchor="middle">custom GUI / IPC / filesystem</text>
+<rect class="box" x="860" y="330" width="260" height="55" rx="9" fill="#ffedd5"/><text class="s" x="990" y="363" text-anchor="middle">largest software engineering cost</text>
+
+<text class="h" x="600" y="475" text-anchor="middle">Recommended path: bring-up with vendor/bare-metal → Zephyr abstraction → decide later whether Linux or a dedicated MSX-NG OS becomes the user-facing system</text>
+</svg>
