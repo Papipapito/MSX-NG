@@ -1,0 +1,22 @@
+digraph G {
+  graph [rankdir=TB, bgcolor="white", pad="0.25", nodesep="0.25", ranksep="0.4", fontname="Helvetica"];
+  node [shape=plain, fontname="Helvetica"];
+  budget [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="7" COLOR="#94a3b8">
+      <TR><TD BGCOLOR="#0f766e"><FONT COLOR="white"><B>MSX-NG v0.1 planning budget</B></FONT></TD><TD BGCOLOR="#0f766e"><FONT COLOR="white"><B>LUT range</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">RV32 CPU + MMU + L1</TD><TD>6-10K</TD></TR>
+      <TR><TD ALIGN="LEFT">SoC / IRQ / timer / DMA</TD><TD>4-8K</TD></TR>
+      <TR><TD ALIGN="LEFT">DDR / board wrapper</TD><TD>3-6K</TD></TR>
+      <TR><TD ALIGN="LEFT">Z80 + MSX bus</TD><TD>2-4K</TD></TR>
+      <TR><TD ALIGN="LEFT">V9968</TD><TD>10-18K</TD></TR>
+      <TR><TD ALIGN="LEFT">2D GPU + compositor</TD><TD>8-16K</TD></TR>
+      <TR><TD ALIGN="LEFT">HDMI / scanout / scaler</TD><TD>3-6K</TD></TR>
+      <TR><TD ALIGN="LEFT">SD / UART / I/O</TD><TD>3-6K</TD></TR>
+      <TR><TD ALIGN="LEFT">Basic audio</TD><TD>2-4K</TD></TR>
+      <TR><TD ALIGN="LEFT">Debug / boot / reserve</TD><TD>4-8K</TD></TR>
+      <TR><TD BGCOLOR="#ecfeff"><B>Total envelope</B></TD><TD BGCOLOR="#ecfeff"><B>45-86K</B></TD></TR>
+    </TABLE>
+  >];
+  note [shape=box, style="rounded,filled", fillcolor="#f8fafc", color="#cbd5e1", label="GW5AST-138 capacity: 138,240 LUT4\nTarget: keep first integrated v0.1 comfortably below full utilization\nAll numbers are engineering estimates until synthesis/PnR."];
+  budget -> note [style=invis];
+}
