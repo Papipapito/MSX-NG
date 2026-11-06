@@ -1,0 +1,17 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.6", fontname="Helvetica"];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10.5, color="#334155", fillcolor="#f8fafc"];
+  edge [color="#475569", penwidth=1.5, arrowsize=0.75];
+  apps [label="Linux apps\nSDL / Qt / GTK / terminal", fillcolor="#eff6ff"];
+  native [label="Native DDR buffers\nRGB565 / XRGB8888 / ARGB8888", fillcolor="#ecfeff"];
+  z80 [label="Z80 soft core", fillcolor="#fff7ed"];
+  vdp [label="V9968 core", fillcolor="#ffedd5"];
+  legacy [label="Legacy pixel stream / buffer", fillcolor="#fef3c7"];
+  comp [label="Hardware compositor\nprimary + overlay + legacy + cursor\nposition / scale / alpha", fillcolor="#f0fdfa"];
+  hdmi [label="HDMI\n720p60 -> 1080p", fillcolor="#eef2ff"];
+  apps -> native -> comp;
+  z80 -> vdp -> legacy -> comp;
+  cursor [label="Cursor / OSD", fillcolor="#fdf4ff"];
+  cursor -> comp;
+  comp -> hdmi [penwidth=2.2];
+}
