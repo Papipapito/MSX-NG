@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="180" viewBox="0 0 900 180">
+<style>text{font-family:Arial,sans-serif;fill:#0f172a}.b{fill:#f8fafc;stroke:#334155;stroke-width:2}.a{stroke:#0f766e;stroke-width:3;fill:none}.t{font-size:17px;font-weight:700}.s{font-size:13px}</style>
+<rect width="900" height="180" fill="white"/>
+<g transform="translate(15 55)">
+<rect class="b" x="0" y="0" width="110" height="60" rx="10"/><text class="t" x="55" y="26" text-anchor="middle">FPGA</text><text class="s" x="55" y="45" text-anchor="middle">configured</text>
+<rect class="b" x="145" y="0" width="120" height="60" rx="10"/><text class="t" x="205" y="26" text-anchor="middle">Boot ROM</text><text class="s" x="205" y="45" text-anchor="middle">DDR setup</text>
+<rect class="b" x="305" y="0" width="105" height="60" rx="10"/><text class="t" x="357" y="26" text-anchor="middle">OpenSBI</text><text class="s" x="357" y="45" text-anchor="middle">M-mode</text>
+<rect class="b" x="450" y="0" width="105" height="60" rx="10"/><text class="t" x="502" y="26" text-anchor="middle">Linux</text><text class="s" x="502" y="45" text-anchor="middle">S-mode</text>
+<rect class="b" x="595" y="0" width="120" height="60" rx="10"/><text class="t" x="655" y="26" text-anchor="middle">Buildroot</text><text class="s" x="655" y="45" text-anchor="middle">BusyBox/musl</text>
+<rect class="b" x="755" y="0" width="120" height="60" rx="10"/><text class="t" x="815" y="26" text-anchor="middle">Desktop</text><text class="s" x="815" y="45" text-anchor="middle">DRM/Wayland</text>
+<path class="a" d="M125 30h20m120 0h40m105 0h40m105 0h40m120 0h40"/>
+</g><text class="t" x="450" y="30" text-anchor="middle">MSX-NG boot flow</text></svg>
