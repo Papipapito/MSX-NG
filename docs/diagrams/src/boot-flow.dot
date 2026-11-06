@@ -1,0 +1,13 @@
+digraph G {
+  graph [rankdir=TB, bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.45", fontname="Helvetica"];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, color="#334155", fillcolor="#f8fafc", margin="0.12,0.08"];
+  edge [color="#475569", penwidth=1.5, arrowsize=0.75];
+  fpga [label="FPGA configured"];
+  rom [label="BRAM Boot ROM\nDDR init + platform setup", fillcolor="#ecfeff"];
+  sbi [label="OpenSBI\nM-mode firmware", fillcolor="#f0fdfa"];
+  linux [label="Linux kernel\nS-mode / Sv32", fillcolor="#eff6ff"];
+  root [label="Buildroot rootfs\nBusyBox + musl", fillcolor="#eef2ff"];
+  gui [label="DRM/KMS + Wayland/Weston\nor lightweight MSX-NG shell", fillcolor="#fdf4ff"];
+  legacy [label="msxng-legacy service\ncontrols Z80 + V9968 hardware", fillcolor="#fff7ed"];
+  fpga -> rom -> sbi -> linux -> root -> gui -> legacy;
+}
