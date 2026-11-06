@@ -25,3 +25,6 @@
 - [Resource budget](diagrams/resource-budget.svg)
 - [Roadmap](diagrams/roadmap.svg)
 - [Dual-138K SOM backplane](diagrams/dual-138k-backplane.svg)
+- [Dual-138K hard-A25 architecture](diagrams/dual-138k-hardcpu-architecture.svg)
+- [Operating-system alternatives](diagrams/os-alternatives.svg)
+- [Processor hierarchy](diagrams/cpu-hierarchy.svg)

@@ -8,6 +8,33 @@ It is **not required for MSX-NG v0.1**. The first implementation remains a singl
 
 ![Dual 138K backplane](diagrams/dual-138k-backplane.svg)
 
+## Index
+
+1. Purpose
+2. Fundamental hardware assumption: two complete SOMs
+3. Design goals
+4. Proposed architecture
+5. Recommended division of work
+6. Inter-FPGA high-speed link
+7. MSX-NG FPGA Fabric protocol
+8. Memory architecture
+9. Linux graphics model
+10. ESP32-P4 services plane
+11. ESP32-C6 connectivity plane
+12. Modern FPGA expansion bus
+13. Classic MSX cartridge slots
+14. Alternative dual-138K profiles
+15. Capacity perspective
+16. First custom carrier recommendation
+17. Implementation sequence
+18. Alternative architecture: use both hard A25 CPUs
+19. Operating-system alternatives
+20. Recommended processor hierarchy
+21. Boot models
+22. Development path for the alternative
+23. Final architectural comparison
+24. Architecture rule
+
 ## Fundamental hardware assumption: two complete SOMs
 
 The two main 138K devices are **not bare FPGAs on the motherboard**. They are complete **Tang Mega 138K SOMs**, and each SOM must be treated as an autonomous compute module with its **own local resources**.
@@ -467,14 +494,255 @@ Integrate USB/network/recovery only after the core FPGA fabric is stable.
 
 At this point the PCB becomes an integration project rather than an architecture experiment.
 
-# 14. Architecture rule
+# 15. Alternative architecture: use both hard A25 CPUs
 
-The Dual-138K backplane is an **optional implementation profile**, not an MSX-NG requirement.
+If MSX-NG finally targets only a dual-GW5AST-138 platform, a second architecture becomes very attractive: use the two hard Andes A25 RISC-V processors as the main general-purpose CPUs, and move the FPGA soft-RV32 cores into supporting real-time roles.
 
-The same software-visible MSX-NG concepts should remain portable to:
+This avoids spending a large amount of FPGA fabric on Linux-capable soft CPUs, MMUs, caches and interrupt infrastructure that already exist inside each GW5AST hard processor subsystem.
 
-- single 60K;
-- single 138K;
-- Z020 programmable logic;
-- dual 138K;
-- future larger FPGA systems.
+![Hard-A25-first architecture](diagrams/dual-138k-hardcpu-architecture.svg)
+
+## 15.1 Official A25 performance
+
+According to the current GOWIN RiscV_AE350_SOC hardware manual:
+
+- Andes A25 hard RISC-V core.
+- Core clock up to 800 MHz.
+- 1.72 DMIPS/MHz.
+- 3.224845 CoreMark/MHz.
+- 0.783 MWIPS/MHz.
+- Integrated I-cache and D-cache.
+- PLIC, machine timer, debug subsystem and DMA.
+- AHB/APB extension interfaces into FPGA fabric.
+- DDR3 can be accessed by the processor subsystem and FPGA-side logic through the documented architecture.
+
+At 800 MHz the benchmark reference point is about 1,376 DMIPS and 2,580 CoreMark per A25. These are benchmark indicators, not guaranteed application throughput.
+
+Official source: https://www.gowinsemi.com/upload/database_doc/2725/document/67dd369be07af.pdf
+
+## 15.2 The two A25 processors are not a normal SMP pair
+
+Each A25 belongs to a different GW5AST chip, with private caches and its own SOM-local DDR. There is no automatic hardware cache coherence across the SOM-to-SOM SERDES link.
+
+Therefore the first implementation should not expose A25-A and A25-B to one operating system as ordinary CPU0/CPU1. They should be treated as two cooperating compute nodes connected by the MSX-NG Fabric.
+
+## 15.3 Recommended role split
+
+### A25-A — primary system CPU
+
+- user-facing OS;
+- applications and shell/desktop;
+- filesystem ownership;
+- networking and USB;
+- storage;
+- global MSX-NG management.
+
+### A25-B — accelerator / service CPU
+
+- graphics command supervision;
+- media and asset handling;
+- decompression;
+- legacy-machine management;
+- background compute;
+- optional second OS or dedicated firmware.
+
+Communication should use explicit queues, DMA, messages, doorbells and interrupts over the FPGA Fabric.
+
+# 16. Operating-system alternatives
+
+![Operating-system alternatives](diagrams/os-alternatives.svg)
+
+## 16.1 Option A — Linux
+
+Node A can run the main Linux/Buildroot system. Node B may run a second lightweight Linux, an RTOS or dedicated firmware.
+
+If both A25s run Linux, they remain two Linux nodes rather than one coherent SMP kernel. A future transport could expose Node B through MSX-NG devices and queue structures inspired by virtio: descriptor rings, available/completion queues, doorbells, interrupts and DMA.
+
+Advantages: best software ecosystem, POSIX, networking, SSH, filesystems, standard libraries and existing graphical stacks.
+
+Disadvantages: highest software footprint and less deterministic behavior.
+
+## 16.2 Option B — Zephyr / RTOS
+
+This is a strong fit if MSX-NG is intended to feel like a dedicated computer rather than a generic Linux board.
+
+Possible model:
+
+    SOM A: A25-A -> Zephyr/RTOS -> UI, filesystem, network, applications
+    SOM B: A25-B -> Zephyr/RTOS -> GPU, media and legacy services
+
+Advantages:
+
+- fast startup;
+- deterministic scheduling;
+- low memory footprint;
+- threads, timers, synchronization and drivers already available;
+- cleaner route toward a dedicated MSX-NG API.
+
+## 16.3 Option C — bare-metal / dedicated MSX-NG OS
+
+The most ambitious option is a small system designed specifically for MSX-NG.
+
+Possible layers:
+
+    MSX-NG kernel
+      -> scheduler
+      -> memory manager
+      -> IPC/message ports
+      -> filesystem
+      -> graphics service
+      -> audio service
+      -> networking
+      -> MSX legacy manager
+      -> MSX-NG application API
+
+This provides the strongest machine identity, minimal overhead and potentially extremely fast boot, but also creates the largest software-engineering burden.
+
+## 16.4 Recommended evolution
+
+    vendor bare-metal bring-up
+        -> Zephyr/RTOS hardware abstraction
+        -> stable MSX-NG HAL/API
+        -> later choose Linux profile and/or dedicated MSX-NG OS
+
+This allows the low-level hardware architecture to stabilize before locking the user-facing OS.
+
+# 17. Recommended processor hierarchy
+
+![Processor hierarchy](diagrams/cpu-hierarchy.svg)
+
+## Level 1 — hard A25 general-purpose CPUs
+
+- A25-A: main system CPU.
+- A25-B: accelerator / secondary-node CPU.
+- Official maximum core clock: up to 800 MHz.
+- No FPGA LUT cost for implementing the CPU itself.
+
+## Level 2 — soft RV32 real-time controllers
+
+A small RV32 in each FPGA remains useful, but no longer needs Linux, Supervisor mode or an MMU.
+
+Possible soft-core profile:
+
+- RV32IMC or RV32E/IMC;
+- Machine mode only;
+- no MMU;
+- small local memory or cache;
+- deterministic interrupts;
+- DMA access;
+- mailbox to the A25.
+
+RV32-A tasks:
+
+- MSX slot timing;
+- keyboard/joystick handling;
+- expansion enumeration;
+- DMA supervision;
+- board monitoring and deterministic I/O.
+
+RV32-B tasks:
+
+- GPU command queues;
+- V9968 supervision;
+- video timing;
+- audio sequencing;
+- DMA;
+- accelerator scheduling.
+
+Targets such as 100-150 MHz for these soft cores are implementation estimates, not guaranteed device specifications.
+
+## Level 3 — dedicated hardware engines
+
+- Z80;
+- V9968;
+- native 2D GPU;
+- compositor;
+- audio engines;
+- DMA;
+- optional OPL4;
+- optional DSP/3D.
+
+# 18. Boot models
+
+## Linux-first
+
+    SOM A: A25 -> platform firmware/OpenSBI -> Linux -> desktop
+    SOM B: A25 -> firmware/RTOS or second Linux -> accelerator services
+    soft RV32-A/B -> real-time FPGA control
+
+## RTOS-first
+
+    SOM A: A25 -> Zephyr -> MSX-NG shell/UI
+    SOM B: A25 -> Zephyr -> graphics/media services
+    soft RV32-A/B -> deterministic hardware control
+
+## Dedicated MSX-NG OS
+
+    SOM A: A25 -> MSX-NG kernel -> applications
+    SOM B: A25 -> accelerator kernel/firmware
+    soft RV32-A/B -> local FPGA controllers
+
+# 19. Development path for the alternative
+
+## H1 — prove one hard A25
+
+- UART;
+- DDR;
+- interrupts;
+- FPGA-register access;
+- DMA between processor/DDR and FPGA logic.
+
+## H2 — compare software environments
+
+Build at least Linux/Buildroot and Zephyr images and measure boot time, RAM use, interrupt latency, driver effort and usability.
+
+## H3 — add one soft RV32 helper
+
+Validate mailbox communication, bidirectional interrupts, DMA/control-register access and a deterministic real-time task.
+
+## H4 — activate the second 138K node
+
+Boot A25-B independently and establish the SERDES Fabric.
+
+## H5 — implement one remote service
+
+Good first experiments: framebuffer transfer, image decompression or GPU command processing.
+
+## H6 — choose the final OS model from measurements
+
+Do not select Linux, RTOS or a custom OS only by preference; compare real boot, latency, memory and development data first.
+
+# 20. Final architectural comparison
+
+| Question | Soft-RV32-first | Hard-A25-first |
+|---|---|---|
+| Portable to 60K | Yes | No |
+| Portable to Z020 PL-only | Yes | No |
+| Uses GW5AST hard CPU | Optional | Required |
+| Main CPU clock | FPGA-dependent | Up to 800 MHz official |
+| LUT cost for main CPU | Significant | Essentially none |
+| Linux bring-up | More work | Easier |
+| Soft RV32 role | Main OS CPU | Real-time controller |
+| Dual-SOM CPU performance | Modest | Much higher |
+| Best fit | Portable FPGA standard | Dedicated dual-138K computer |
+
+## Recommendation if MSX-NG is fixed to two 138K SOMs
+
+    A25-A       = main system CPU
+    A25-B       = accelerator / secondary-node CPU
+    soft RV32-A = system real-time controller
+    soft RV32-B = graphics/media real-time controller
+    FPGA logic  = Z80 / V9968 / GPU / audio / DMA / accelerators
+    P4 / C6     = external services and connectivity
+
+This uses each processing layer for the work it is best suited to.
+
+# 21. Architecture rule
+
+The repository should keep both strategies as alternatives until hardware measurements exist.
+
+Portable profile: soft RV32 remains the main CPU and the architecture can migrate to other FPGA families.
+
+Dual-138K optimized profile: both hard A25 processors become the main compute nodes and the soft RV32 cores become real-time assistants.
+
+The final choice should be based on actual bring-up results, resource use, boot time and software requirements.
