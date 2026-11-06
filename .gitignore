@@ -1,0 +1,11 @@
+build/
+output/
+*.fs
+*.bin
+*.bit
+*.svf
+*.log
+*.jou
+*.tmp
+.DS_Store
+__pycache__/
