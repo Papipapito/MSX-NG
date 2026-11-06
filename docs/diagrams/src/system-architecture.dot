@@ -1,0 +1,31 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.45", ranksep="0.7", fontname="Helvetica"];
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, color="#334155", fillcolor="#f8fafc", margin="0.12,0.08"];
+  edge [color="#475569", penwidth=1.6, arrowsize=0.8, fontname="Helvetica", fontsize=9];
+
+  subgraph cluster_fpga {
+    label="GW5AST-138 FPGA FABRIC (hard RISC-V not required)";
+    color="#0f766e"; penwidth=2; style="rounded";
+    cpu [label="Native CPU\nRV32IMAC soft core\nM/S/U + Sv32", fillcolor="#ecfeff"];
+    soc [label="SoC fabric\nIRQ / timer / DMA\nDDR / SD / UART / GPIO", fillcolor="#f0fdfa"];
+    gpu [label="Native 2D GPU\nKMS planes / compositor\nscaler / cursor", fillcolor="#eff6ff"];
+    legacy [label="Legacy MSX island\nZ80 + MSX bus + V9968", fillcolor="#fff7ed"];
+    audio [label="Basic audio\nfuture expansion", fillcolor="#fdf4ff"];
+    hdmi [label="HDMI scanout\n720p first / 1080p later", fillcolor="#eef2ff"];
+
+    cpu -> soc [dir=both];
+    soc -> gpu [dir=both];
+    soc -> legacy [dir=both];
+    soc -> audio [dir=both];
+    legacy -> gpu [label="legacy plane"];
+    gpu -> hdmi;
+  }
+
+  ddr [label="1 GB DDR3\nLinux RAM + framebuffers + DMA", shape=cylinder, fillcolor="#fefce8"];
+  sd [label="microSD\nBuildroot rootfs / ROM / DSK", fillcolor="#f1f5f9"];
+  input [label="Keyboard / mouse / gamepad\n(board path first, native path later)", fillcolor="#f1f5f9"];
+
+  soc -> ddr [dir=both, penwidth=2.2];
+  soc -> sd [dir=both];
+  soc -> input [dir=both];
+}
