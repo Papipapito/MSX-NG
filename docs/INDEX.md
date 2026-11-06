@@ -15,6 +15,7 @@
 13. [Risks and open questions](13-risks.md)
 14. [Architecture decisions](14-decisions.md)
 15. [References](15-references.md)
+16. [Dual-138K SOM backplane](16-dual-138k-infrastructure.md)
 
 ## Diagrams
 
@@ -23,3 +24,4 @@
 - [Graphics pipeline](diagrams/graphics-pipeline.svg)
 - [Resource budget](diagrams/resource-budget.svg)
 - [Roadmap](diagrams/roadmap.svg)
+- [Dual-138K SOM backplane](diagrams/dual-138k-backplane.svg)

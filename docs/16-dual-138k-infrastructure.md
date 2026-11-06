@@ -8,10 +8,54 @@ It is **not required for MSX-NG v0.1**. The first implementation remains a singl
 
 ![Dual 138K backplane](diagrams/dual-138k-backplane.svg)
 
+## Fundamental hardware assumption: two complete SOMs
+
+The two main 138K devices are **not bare FPGAs on the motherboard**. They are complete **Tang Mega 138K SOMs**, and each SOM must be treated as an autonomous compute module with its **own local resources**.
+
+Each SOM contributes, independently:
+
+- GW5AST-138 FPGA fabric;
+- its own onboard DDR3;
+- its own SPI flash / configuration storage;
+- its own local power conversion and decoupling already present on the module;
+- its own clocking resources and local oscillator inputs as provided by the SOM;
+- its own JTAG/configuration path;
+- any additional onboard resources exposed by that SOM revision.
+
+The carrier/backplane must **not try to merge, share, or recreate those local resources**. Its job is instead to provide:
+
+- power input and sequencing for both SOMs;
+- reset coordination;
+- reference clocks only where an inter-module link requires them;
+- the high-speed SOM-to-SOM fabric;
+- classic MSX slots;
+- modern FPGA expansion sockets;
+- ESP32-P4 / ESP32-C6 service connectivity;
+- external HDMI/USB/Ethernet/audio connectors where they are not already directly usable from the SOMs.
+
+Conceptually:
+
+```text
+       COMPLETE SOM A                          COMPLETE SOM B
+ +--------------------------+            +--------------------------+
+ | GW5AST-138               |            | GW5AST-138               |
+ | own DDR3                 |            | own DDR3                 |
+ | own flash                |            | own flash                |
+ | own clocks               |            | own clocks               |
+ | own local power          |            | own local power          |
+ | own configuration/debug  |            | own configuration/debug  |
+ +------------+-------------+            +-------------+------------+
+              |                                            |
+              +====== high-speed FPGA fabric ==============+
+                           carrier/backplane
+```
+
+This distinction is important: **the motherboard links two self-contained FPGA computers; it does not build two FPGA computers from discrete parts.**
+
 ## Design goals
 
 1. Keep both 138K modules replaceable.
-2. Give each 138K its own local DDR3 and local power/clock environment.
+2. Use two complete 138K SOMs, each retaining its own onboard DDR3, flash, clocking, local power resources and configuration path.
 3. Connect both FPGAs with a **dedicated high-speed point-to-point fabric**.
 4. Avoid transparent cache coherence between the two FPGAs in the first generation.
 5. Add a separate **services plane** using ESP32-P4 + ESP32-C6.
